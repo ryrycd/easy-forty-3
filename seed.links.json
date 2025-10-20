@@ -1,0 +1,17 @@
+[
+  {
+    "url": "https://acorns.com/invite/AAAAAA",
+    "quota": 2,
+    "note": "Pool A"
+  },
+  {
+    "url": "https://acorns.com/invite/BBBBBB",
+    "quota": 3,
+    "note": "Pool B"
+  },
+  {
+    "url": "https://acorns.com/invite/CCCCCC",
+    "quota": 2,
+    "note": "Pool C"
+  }
+]
