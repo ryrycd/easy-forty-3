@@ -1,3 +1,4 @@
+// functions/telnyx/inbound.js
 import {
   getLinks, setLinks, getUser, setUser, sendSMS, logEvent,
   getInboundFrom, getInboundTo, getInboundText, getInboundMedia, isFrozen
@@ -14,17 +15,33 @@ export async function onRequestPost({ request, env }) {
   let payload;
   try { payload = await request.json(); } catch { return new Response('Bad Request', { status: 400 }); }
 
+  // 2) Process ONLY real inbound messages (ignore delivery status / outbound events)
+  const type = payload?.data?.event_type || payload?.data?.type || '';
+  if (type !== 'message.received') {
+    // optional: surface minimal diagnostics in logs
+    console.log('telnyx-inbound: ignored non-inbound event', { type });
+    return new Response('Ignored non-inbound event', { status: 200 });
+  }
+
   const from = getInboundFrom(payload);
   const to   = getInboundTo(payload);
   const text = String(getInboundText(payload) || '').trim();
-  const media = getInboundMedia(payload);
+  const media = getInboundMedia(payload) || [];
 
-  // 2) Only process messages that were actually sent to YOUR toll-free number
-  if (!to || env.TOLL_FREE_NUMBER && to !== env.TOLL_FREE_NUMBER) {
+  // optional: quick visibility in Cloudflare Functions logs
+  console.log('telnyx-inbound', { type, from, to, mediaCount: media.length });
+
+  // 3) Only process messages that were actually sent to YOUR toll-free number
+  if (!to || (env.TOLL_FREE_NUMBER && to !== env.TOLL_FREE_NUMBER)) {
     return new Response('Ignored: not our number', { status: 200 });
   }
 
-  // 3) If frozen, acknowledge but do not send anything back
+  // 4) Never respond to ourselves (belt-and-suspenders)
+  if (from && env.TOLL_FREE_NUMBER && from === env.TOLL_FREE_NUMBER) {
+    return new Response('Ignored: self-message', { status: 200 });
+  }
+
+  // 5) If frozen, acknowledge but do not send anything back
   if (isFrozen(env)) {
     await logEvent(env, { type:'frozen_inbound', from, to, text, t: Date.now() });
     return new Response('OK', { status: 200 });
