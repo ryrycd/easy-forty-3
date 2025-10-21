@@ -1,15 +1,13 @@
-import { getLinks } from '../../../lib/store.js';
+// functions/api/admin/stats.js
+import { getLinks, getConfig } from '../../../lib/store.js';
 
 export async function onRequest({ request, env }) {
-  const cfgKey = env.ADMIN_KEY;
-  if (!cfgKey) {
-    return new Response('Server not configured: ADMIN_KEY is missing.', { status: 500 });
-  }
+  if (!env.ADMIN_KEY) return new Response('Server not configured: ADMIN_KEY is missing.', { status: 500 });
   const key = request.headers.get('X-Admin-Key');
-  if (!key || key !== cfgKey) {
-    return new Response('Unauthorized: Invalid admin key.', { status: 401 });
-  }
+  if (!key || key !== env.ADMIN_KEY) return new Response('Unauthorized: Invalid admin key.', { status: 401 });
+
   const links = await getLinks(env);
+  const cfg = await getConfig(env);
   const items = links?.items || [];
   const totals = {
     totalUsed: items.reduce((a,b)=>a+Number(b.used||0),0),
@@ -19,7 +17,7 @@ export async function onRequest({ request, env }) {
   for (let i=0;i<items.length;i++){
     if (Number(items[i].used||0) < Number(items[i].quota||0)) { activeIndex = i; break; }
   }
-  return new Response(JSON.stringify({ items, activeIndex, totals }, null, 2), {
+  return new Response(JSON.stringify({ items, activeIndex, totals, config: cfg, updatedAt: links?.updatedAt || null }, null, 2), {
     status: 200,
     headers: { 'Content-Type':'application/json' }
   });
