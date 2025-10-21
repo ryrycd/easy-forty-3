@@ -1,0 +1,1 @@
+The inbound webhook requires a token query param ?token=... matching env.WEBHOOK_TOKEN and only processes Telnyx message.received events. All other events return 200 "ignored" without sending messages to avoid loops or unexpected charges.

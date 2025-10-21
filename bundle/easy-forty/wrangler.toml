@@ -1,0 +1,33 @@
+name = "easy-forty"
+compatibility_date = "2025-05-01"
+
+# Used by Cloudflare Pages Functions locally; in the dashboard you'll add bindings with same names
+pages_build_output_dir = "dist"
+
+[vars]
+# Filled in via Cloudflare dashboard
+# TELNYX_API_KEY = ""
+# TELNYX_MESSAGING_PROFILE_ID = ""
+# TELNYX_FROM_NUMBER = "+1XXXXXXXXXX"
+# WEBHOOK_TOKEN = ""
+# ADMIN_PASSWORD = ""
+# APP_BASE_URL = "https://easyforty.com"
+# BUSINESS_NAME = "Easy Forty"
+# SUPPORT_EMAIL = "support@easyforty.com"
+# SUPPORT_PHONE = "+1XXXXXXXXXX"
+# R2_PUBLIC_DOMAIN = "<bucket>.<accountid>.r2.dev"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "easy-forty-db"
+# database_id set in dashboard or via wrangler when you create the DB
+
+[[r2_buckets]]
+binding = "EASYFORTY_BUCKET"
+bucket_name = "easy-forty"
+
+[routes]
+patterns = [
+  { pattern = "/privacy", serve = "/legal/privacy.html" },
+  { pattern = "/terms", serve = "/legal/terms.html" }
+]
