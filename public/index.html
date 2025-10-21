@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Easy Forty — $40 Acorns Bonus</title>
-  <meta name="description" content="A simple, trustworthy $40 bonus flow: text your unique link, finish the steps, get paid via Venmo or Zelle." />
+  <meta name="description" content="A clean, two-minute flow: text your unique Acorns link, complete the steps, and get $40 via Venmo or Zelle." />
   <link rel="icon" href="/assets/favicon.svg">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -12,206 +12,170 @@
   <script defer src="/app.js"></script>
   <style>
     :root{
-      --bg:#0a0c10; --bg2:#0d1117; --panel:#0f1420; --card:#0f1524;
-      --line:#1b2536; --text:#e9edf5; --muted:#9aa6b2; --brand:#4f46e5; --ok:#22c55e;
-      --focus: #8ea2ff;
-      --radius:20px; --pad:24px; --gap:18px;
+      --bg:#0b0c0f; --panel:#0f1218; --card:#111625; --line:#1e2738;
+      --text:#eef1f8; --muted:#a0acc1; --brand:#5b6fe8; --brand2:#22c55e; --danger:#ef4444;
     }
     *{box-sizing:border-box}
     html,body{height:100%}
     body{
-      margin:0;
+      margin:0; background:
+        radial-gradient(1200px 650px at 110% -10%, rgba(91,111,232,.22), transparent),
+        linear-gradient(180deg, var(--bg), #0f1117);
       color:var(--text);
-      background:
-        radial-gradient(1200px 600px at 100% -10%, rgba(79,70,229,.22), transparent),
-        linear-gradient(180deg, var(--bg), var(--bg2));
-      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, 'Helvetica Neue', sans-serif;
-      -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
+      font-family:Inter, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, 'Helvetica Neue', sans-serif;
     }
 
-    /* Layout */
-    .shell{min-height:100dvh; display:grid; place-items:center; padding:28px}
-    .wrap{width:100%; max-width:780px}
-    .hero{
-      margin:0 0 14px 0; padding:0 var(--pad);
-      display:flex; flex-direction:column; align-items:center; text-align:center; gap:10px;
+    /* Shell */
+    .container{max-width:720px; margin:0 auto; padding:24px}
+    .frame{
+      background:linear-gradient(180deg, var(--card), #0f141f);
+      border:1px solid var(--line);
+      border-radius:20px;
+      box-shadow:0 20px 50px rgba(0,0,0,.45);
+      padding:20px;
     }
-    .badge{
-      display:inline-flex; gap:8px; align-items:center;
-      border:1px solid #233149; color:#b5c1d1; background:#0d121b;
-      padding:6px 12px; border-radius:999px; font-size:12px; letter-spacing:.2px;
+    header{
+      display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:10px;
     }
-    h1{font-size:34px; font-weight:800; line-height:1.18; margin:6px 0 0}
-    .sub{color:var(--muted); max-width:640px}
-
-    /* Card */
-    .card{
-      background:linear-gradient(180deg,var(--card),#0e1220);
-      border:1px solid var(--line); border-radius:var(--radius);
-      box-shadow:0 18px 60px rgba(0,0,0,.45);
-      padding: clamp(18px, 3.2vw, 28px);
-    }
+    .brand{font-weight:800; letter-spacing:.2px; font-size:18px}
+    .support a{color:#9db7ff; text-decoration:none; font-weight:600; font-size:13px}
 
     /* Progress */
-    .progress{display:flex; align-items:center; gap:10px; margin-bottom:14px}
-    .bar{flex:1; height:6px; background:#151c2b; border-radius:999px; overflow:hidden}
-    .fill{height:100%; width:0%; background:linear-gradient(90deg, var(--brand), #7c3aed); border-radius:999px; transition:width .28s ease}
-    .stepnum{font-size:12px; color:#a8b2c4}
+    .progress{height:6px; background:#151a26; border-radius:99px; overflow:hidden; margin:6px 0 16px}
+    .bar{height:100%; width:0%; background:linear-gradient(90deg, var(--brand), #7c3aed)}
+    .title{font-size:28px; line-height:1.2; margin:8px 0 2px}
+    .subtitle{color:var(--muted); margin:0 0 4px}
 
-    /* Step layout (Typeform style) */
-    .q{display:none; animation:fade .22s ease; min-height: 170px}
-    .q.active{display:block}
+    /* Screen */
+    .screen{display:none; animation:fade .22s ease; padding:8px 0 2px}
+    .screen.active{display:block}
     @keyframes fade{from{opacity:0; transform:translateY(8px)} to{opacity:1; transform:translateY(0)}}
 
-    .prompt{font-size:22px; font-weight:700; margin: 6px 0 12px}
-    .help{color:var(--muted); font-size:14px; margin: 0 0 12px}
-
-    /* Inputs / choices */
+    /* Inputs & choices */
+    label{font-weight:700; font-size:16px; display:block; margin:8px 0 10px}
     input[type=tel], input[type=text], input[type=email]{
-      width:100%; padding:16px 14px; border-radius:14px;
-      border:1px solid #25324a; background:#0d1320; color:#e9edf5; outline:none;
-      font-size:16px;
+      width:100%; padding:16px 14px; border-radius:14px; border:1px solid #2a354a;
+      background:#0e1320; color:#e8edf7; font-size:16px; outline:none;
     }
-    input:focus{border-color:var(--focus); box-shadow:0 0 0 3px rgba(142,162,255,.16)}
-
-    .choices{display:grid; grid-template-columns:1fr 1fr; gap:14px; margin:12px 0}
+    input::placeholder{color:#687388}
+    .choices{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:6px}
+    .choices.three{grid-template-columns:1fr 1fr 1fr}
     .choice{
-      display:flex; align-items:center; justify-content:center; text-align:center;
-      padding:16px; border-radius:14px; border:1px solid #26324b; background:#0d1320;
-      font-weight:700; cursor:pointer; user-select:none;
+      border:1px solid #263248; background:#0f1524; color:#cbd5ee; border-radius:14px;
+      padding:14px; text-align:center; font-weight:700; cursor:pointer; user-select:none;
+      transition:transform .06s ease, border-color .2s ease, background .2s ease;
     }
-    .choice:hover{border-color:#2e4064}
-    .choice.active{outline:2px solid var(--focus)}
+    .choice:hover{transform:translateY(-1px)}
+    .choice.active{outline:2px solid #5b6fe8}
+    .hint{color:var(--muted); font-size:13px; margin:8px 0 2px}
+    .note{background:#0f1e15; border:1px solid #1b3b2a; color:#cfeedd; padding:10px 12px; border-radius:12px; margin-top:10px; font-size:14px}
+    .warn{background:#2a1212; border:1px solid #5a2222; color:#ffd3d3; padding:12px; border-radius:12px; margin-top:10px; font-size:14px}
 
-    .consent{
-      display:flex; gap:12px; align-items:flex-start; background:#0d1320; border:1px solid #26324b;
-      padding:14px; border-radius:14px; color:#cad5e5; line-height:1.5;
-    }
-    .consent input{transform:scale(1.2); margin-top:3px}
-
-    /* Actions */
-    .actions{display:flex; gap:10px; flex-wrap:wrap; margin-top:14px}
+    /* CTA */
+    .actions{display:flex; gap:10px; align-items:center; margin-top:12px}
     .btn{
-      display:inline-flex; align-items:center; justify-content:center; gap:10px;
-      padding:14px 16px; border-radius:12px; border:none; font-weight:800;
-      background:linear-gradient(90deg, var(--brand), #7c3aed); color:white; cursor:pointer;
+      flex:1; display:inline-flex; align-items:center; justify-content:center; gap:8px;
+      padding:16px; border:none; border-radius:14px; font-weight:800; cursor:pointer;
+      background:linear-gradient(90deg, var(--brand), #7c3aed); color:#fff;
     }
-    .btn.muted{background:#111828; border:1px solid #26324b; color:#c0c8d6}
-    .btn[disabled]{opacity:.6; cursor:not-allowed}
+    .btn.secondary{background:#162033; color:#c9d3ea; border:1px solid #263046}
+    .btn:disabled{opacity:.6; cursor:not-allowed}
 
-    /* Notices & trust */
-    .ok{background:#0e1b14; border:1px solid #1c3c29; color:#c6f2d7; border-radius:12px; padding:12px; margin-top:12px}
-    .bad{background:#1f1314; border:1px solid #462022; color:#f2c2c2; border-radius:12px; padding:12px; margin-top:12px}
-    .trust{display:flex; gap:10px; flex-wrap:wrap; margin-top:16px}
-    .trust span{font-size:11px; color:#a3b0c2; border:1px solid #283246; border-radius:999px; padding:6px 10px; background:#0d121b}
-    .footer{text-align:center; color:#99a6b8; font-size:12px; margin-top:14px}
-    a{color:#a8c2ff; text-decoration:none}
+    /* Footer */
+    .footer{margin:14px 0 0; text-align:center; color:var(--muted); font-size:12px}
+    .footer a{color:#9db7ff; text-decoration:none}
 
-    /* Spacing helpers */
-    .gap{height:6px} .gap-lg{height:16px}
+    /* Alerts */
+    .ok{background:#102016; border:1px solid #183a22; color:#bfe8cb; padding:12px; border-radius:12px; margin:10px 0}
+    .bad{background:#221314; border:1px solid #4f2026; color:#f1b5bb; padding:12px; border-radius:12px; margin:10px 0}
+    .hidden{display:none}
 
-    /* Error shake (on invalid) */
-    .shake{animation:shake .22s ease}
-    @keyframes shake{0%{transform:translateX(0)}25%{transform:translateX(-4px)}50%{transform:translateX(4px)}75%{transform:translateX(-3px)}100%{transform:translateX(0)}}
+    /* Better spacing on small screens */
+    @media (max-width:520px){
+      .title{font-size:24px}
+      .choices{grid-template-columns:1fr}
+      .choices.three{grid-template-columns:1fr}
+    }
   </style>
 </head>
 <body>
-  <div class="shell">
-    <div class="wrap">
-      <header class="hero">
-        <div class="badge">🔒 Privacy-first • TCPA consent • One-to-one support</div>
-        <h1>Get $40 with Acorns — simple and safe</h1>
-        <p class="sub">We text your unique link, you deposit $5, reply DONE with a screenshot, and we pay you via Venmo or Zelle. Personal referral program. Not affiliated with Acorns.</p>
-      </header>
+  <div class="container">
+    <header>
+      <div class="brand">Easy Forty</div>
+      <div class="support"><a href="mailto:support@easyforty.com" aria-label="Email support">support@easyforty.com</a></div>
+    </header>
 
-      <main class="card">
-        <div class="progress">
-          <div class="stepnum" id="stepCount">Step 1 of 4</div>
-          <div class="bar"><div class="fill" id="fill"></div></div>
+    <div class="frame" role="form" aria-live="polite">
+      <div class="progress" aria-hidden="true"><div class="bar" id="bar"></div></div>
+
+      <!-- Step 1: Phone -->
+      <section id="step1" class="screen active">
+        <h2 class="title">What’s your mobile number?</h2>
+        <p class="subtitle">We’ll text your unique link. U.S. + Canada only.</p>
+        <label for="phone" class="visually-hidden">Phone number</label>
+        <input id="phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="(555) 555-5555" aria-describedby="phoneHelp" />
+        <p id="phoneHelp" class="hint">We never share your number.</p>
+        <div id="phoneError" class="bad hidden"></div>
+      </section>
+
+      <!-- Step 2: Eligibility -->
+      <section id="step2" class="screen">
+        <h2 class="title">Have you ever created an Acorns account before?</h2>
+        <div class="choices three">
+          <div class="choice" data-elg="no">No</div>
+          <div class="choice" data-elg="not_sure">Not sure</div>
+          <div class="choice" data-elg="yes">Yes</div>
+        </div>
+        <div id="eligibilityNote" class="note hidden"></div>
+        <div id="eligibilityWarn" class="warn hidden"></div>
+      </section>
+
+      <!-- Step 3: Payout method -->
+      <section id="step3" class="screen">
+        <h2 class="title">How would you like to receive your $40?</h2>
+        <div class="choices">
+          <div class="choice active" data-method="venmo">@ Venmo</div>
+          <div class="choice" data-method="zelle">Zelle</div>
         </div>
 
-        <div id="msg" class="bad" style="display:none"></div>
-
-        <!-- Q1: Phone -->
-        <section id="q1" class="q active">
-          <div class="prompt">What’s your mobile number?</div>
-          <p class="help">We’ll text your unique link immediately. U.S. & Canada only.</p>
-          <input id="phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="(555) 555-5555" />
-          <div class="actions">
-            <button id="next1" class="btn">Continue</button>
-          </div>
-        </section>
-
-        <!-- Q2: Payout method -->
-        <section id="q2" class="q">
-          <div class="prompt">How would you like to receive your $40?</div>
-          <div class="choices">
-            <div class="choice" data-method="venmo">@ Venmo</div>
-            <div class="choice" data-method="zelle">Zelle</div>
-          </div>
-          <div class="actions">
-            <button id="back2" class="btn muted">Back</button>
-            <button id="next2" class="btn">Continue</button>
-          </div>
-        </section>
-
-        <!-- Q3a: Venmo username -->
-        <section id="q3v" class="q">
-          <div class="prompt">What’s your @Venmo username?</div>
-          <p class="help">We only use this to pay you after verification.</p>
+        <!-- Venmo -->
+        <div id="venmoWrap" class="section" style="margin-top:12px">
+          <label for="venmo">@Venmo username</label>
           <input id="venmo" type="text" placeholder="@yourname" />
-          <div class="actions">
-            <button id="back3v" class="btn muted">Back</button>
-            <button id="next3v" class="btn">Continue</button>
-          </div>
-        </section>
+          <p class="hint">Used only to send your payout after verification.</p>
+        </div>
 
-        <!-- Q3z: Zelle question -->
-        <section id="q3z" class="q">
-          <div class="prompt">Is your Zelle the phone number you just entered, or something else?</div>
+        <!-- Zelle -->
+        <div id="zelleWrap" class="section hidden" style="margin-top:12px">
+          <h3 class="subtitle" style="margin-top:0">Is your Zelle the phone number you just entered, or something else?</h3>
           <div class="choices">
-            <div class="choice" data-zelle="same">Use my phone number</div>
-            <div class="choice" data-zelle="other">Something else</div>
+            <div class="choice" id="zelleSame">Same phone</div>
+            <div class="choice" id="zelleOther">Something else</div>
           </div>
-          <div id="zelleOtherWrap" style="display:none; margin-top:10px">
-            <input id="zelleOther" type="text" placeholder="email@domain.com or (555) 555-5555" />
+          <div id="zelleInput" class="hidden" style="margin-top:10px">
+            <label for="zelle">Zelle email or phone</label>
+            <input id="zelle" type="text" placeholder="email@domain.com or (555) 555-5555" />
           </div>
-          <div class="actions">
-            <button id="back3z" class="btn muted">Back</button>
-            <button id="next3z" class="btn">Continue</button>
-          </div>
-        </section>
-
-        <!-- Q4: Consent -->
-        <section id="q4" class="q">
-          <div class="prompt">Last step — are you OK receiving a few texts?</div>
-          <div class="consent">
-            <input id="consent" type="checkbox">
-            <div>
-              I agree to receive up to 3 SMS/MMS for this offer from Easy Forty.
-              <a href="/privacy.html" target="_blank" rel="noopener">Privacy</a> ·
-              <a href="/terms.html" target="_blank" rel="noopener">Terms</a>. Msg & data rates may apply.
-              Reply STOP to opt out, HELP for help.
-            </div>
-          </div>
-          <div class="actions">
-            <button id="back4" class="btn muted">Back</button>
-            <button id="finish" class="btn">Text me the link →</button>
-          </div>
-          <div id="ok" class="ok" style="display:none">Check your texts—your unique link was sent. After you finish the steps, reply <b>DONE</b>, then send a screenshot showing the $5 deposit.</div>
-        </section>
-
-        <div class="trust">
-          <span>Minimal data collection</span>
-          <span>No spam ever</span>
-          <span>Clear TCPA consent</span>
         </div>
-        <div class="footer">
-          Need help? <a href="mailto:support@easyforty.com">support@easyforty.com</a>
+      </section>
+
+      <!-- Step 4: Consent -->
+      <section id="step4" class="screen">
+        <h2 class="title">Can we text you about this offer?</h2>
+        <p class="subtitle">You’ll receive up to 3 SMS/MMS to deliver your link and confirm verification.</p>
+        <label style="display:flex; gap:10px; align-items:flex-start">
+          <input id="consent" type="checkbox" style="margin-top:4px">
+          <span>I agree to receive up to 3 SMS/MMS for this offer from Easy Forty. <a href="/privacy.html" target="_blank" rel="noopener">Privacy</a> · <a href="/terms.html" target="_blank" rel="noopener">Terms</a>. Msg &amp; data rates may apply. Reply STOP to opt out, HELP for help.</span>
+        </label>
+        <div class="actions">
+          <button id="submitBtn" class="btn" disabled>Text me the link →</button>
         </div>
-      </main>
+        <div id="ok" class="ok hidden">Check your texts—your unique link was sent. After you finish the steps, reply <b>DONE</b>, then send a screenshot showing the $5 deposit.</div>
+        <div id="bad" class="bad hidden"></div>
+      </section>
     </div>
+
+    <p class="footer">Not affiliated with Acorns. This is a personal referral program.</p>
   </div>
 </body>
 </html>
