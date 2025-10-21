@@ -12,6 +12,11 @@ export async function onRequestOptions() {
 }
 
 export async function onRequestPost({ request, env }) {
+  // ✅ Added FREEZE check here
+  if (env.FREEZE === 'true') {
+    return json({ error: 'Temporarily paused. Please try again later.' }, 503);
+  }
+
   try {
     const { phone, handle, consent } = await request.json();
     if (!consent) return json({ error: 'Consent required.' }, 400);
@@ -52,7 +57,7 @@ Reply STOP to opt out. HELP for help.`;
   }
 }
 
-function json(body, status=200, extraHeaders={}) {
+function json(body, status = 200, extraHeaders = {}) {
   return new Response(JSON.stringify(body), {
     status,
     headers: { 'Content-Type': 'application/json', ...CORS, ...extraHeaders }
