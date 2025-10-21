@@ -4,234 +4,288 @@
   <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Easy Forty — Admin Console</title>
   <style>
-    :root { --bg:#0b0c0f; --card:#12141a; --muted:#9aa3b2; --text:#e6e8ec; --brand:#4f46e5; --ok:#16a34a; --bad:#ef4444; }
+    :root{--bg:#0b0c0f;--card:#10151e;--muted:#9aa3b2;--text:#e6e8ec;--brand:#4f46e5;--brand2:#22c55e;--line:#212b3b}
     *{box-sizing:border-box}
     body{font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,'Helvetica Neue',sans-serif;background:linear-gradient(180deg,var(--bg),#0f1117);color:var(--text);margin:0;padding:24px}
-    .wrap{max-width:1080px;margin:0 auto}
+    .wrap{max-width:1100px;margin:0 auto}
     h1{margin:0 0 8px}
-    .card{background:radial-gradient(1200px 500px at 100% -50%,rgba(79,70,229,.18),transparent),linear-gradient(180deg,var(--card),#0f1217);border:1px solid #1f2430;border-radius:16px;box-shadow:0 8px 34px rgba(0,0,0,.35);padding:18px;margin:16px 0}
+    .card{background:radial-gradient(900px 500px at 100% -50%,rgba(79,70,229,.18),transparent),linear-gradient(180deg,var(--card),#0e1218);border:1px solid var(--line);border-radius:16px;box-shadow:0 8px 34px rgba(0,0,0,.35);padding:18px;margin:16px 0}
     label{font-weight:600}
-    input,select,button,textarea{border-radius:12px;border:1px solid #273043;background:#0e131a;color:#e5e7eb;padding:10px 12px}
+    input,button,textarea{border-radius:12px;border:1px solid #273043;background:#0e131a;color:#e5e7eb;padding:10px 12px}
     input[type="date"]{padding:8px 12px}
     button{cursor:pointer}
-    .row{display:grid;gap:12px;grid-template-columns:1fr 180px}
-    .grid{display:grid;gap:10px}
-    .flex{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+    .grid{display:grid;gap:12px}
+    .row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+    .right{margin-left:auto}
     .muted{color:var(--muted)}
+    .pill{font-size:11px;padding:4px 8px;border-radius:999px;border:1px solid #2a3550;background:#0f1522;color:#aeb8d6}
     .ok{color:#c9f7d8;background:#0f1e15;border:1px solid #1c3b2a;padding:10px;border-radius:10px}
     .bad{color:#ffd3d3;background:#2a1010;border:1px solid #4a1c1c;padding:10px;border-radius:10px}
-    table{width:100%;border-collapse:separate;border-spacing:0 8px}
+    table{width:100%;border-collapse:separate;border-spacing:0 10px}
     th,td{padding:10px 8px;text-align:left}
     th{font-size:12px;color:#9aa3b2;font-weight:600}
     tbody tr{background:#0d1219;border:1px solid #223045}
     tbody tr td:first-child{border-top-left-radius:10px;border-bottom-left-radius:10px}
     tbody tr td:last-child{border-top-right-radius:10px;border-bottom-right-radius:10px}
     .mono{font-family:ui-monospace,Menlo,Consolas,monospace}
-    .pill{font-size:11px;padding:4px 8px;border-radius:999px;border:1px solid #2a3550;background:#0f1522;color:#aeb8d6}
-    .actions button{padding:10px 12px}
-    .brand{background:linear-gradient(90deg,var(--brand),#7c3aed);border:none}
     .ghost{background:#10151e;border:1px dashed #2a364c}
+    .brand{background:linear-gradient(90deg,var(--brand),#7c3aed);border:none}
     .danger{background:#2a1517;border:1px solid #5b2328}
-    .right{justify-content:flex-end}
-    .fill{flex:1}
-    .nowrap{white-space:nowrap}
-    .center{display:grid;place-items:center}
+    .success{background:#0e1a12;border:1px solid #1d3b2b}
+    .weak{opacity:.7}
+    .drag{cursor:grab}
+    .selected tr{outline:2px solid #3b82f6}
+    .chk{width:16px;height:16px}
+    .handle{width:18px;text-align:center;opacity:.6}
+    .switch{position:relative;display:inline-block;width:50px;height:28px}
+    .switch input{opacity:0;width:0;height:0}
+    .slider{position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0;background:#253045;border-radius:999px;transition:.2s}
+    .slider:before{position:absolute;content:"";height:22px;width:22px;left:3px;top:3px;background:white;border-radius:50%;transition:.2s}
+    .switch input:checked + .slider{background:#4f46e5}
+    .switch input:checked + .slider:before{transform:translateX(22px)}
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <h1>Easy Forty — Admin Console</h1>
-    <div class="muted">Seed and manage your rotating referral links. Use Production or Preview key as appropriate.</div>
+<div class="wrap">
+  <h1>Easy Forty — Admin Console</h1>
+  <div class="muted">Drag to reorder, bulk-edit weekly targets, and manage weekly auto-reset.</div>
 
-    <div class="card grid">
+  <div class="card row">
+    <div class="grid" style="min-width:320px">
+      <label>Admin Key</label>
+      <input id="key" type="password" placeholder="ADMIN_KEY" autocomplete="off">
+    </div>
+    <div class="grid">
+      <label>&nbsp;</label>
       <div class="row">
-        <div class="grid">
-          <label>Admin Key</label>
-          <input id="key" type="password" placeholder="ADMIN_KEY" autocomplete="off">
-          <div class="muted">Set <span class="mono">ADMIN_KEY</span> in Pages → Settings → Environment variables for BOTH <b>Production</b> and <b>Preview</b>, then redeploy.</div>
-        </div>
-        <div class="grid">
-          <label>&nbsp;</label>
-          <div class="flex right">
-            <button class="ghost" id="load">Load current</button>
-          </div>
-        </div>
+        <button class="ghost" id="load">Load current</button>
+        <button class="ghost" id="exportBtn">Export JSON</button>
+        <button class="ghost" id="importBtn">Import JSON</button>
       </div>
     </div>
+    <div class="right pill">Active link: <span id="activeIdx" class="mono">—</span></div>
+  </div>
 
-    <div class="card">
-      <div class="flex">
-        <div class="pill">Active link: <span id="activeIdx" class="mono">—</span></div>
-        <div class="pill">Total used: <span id="totUsed" class="mono">0</span></div>
-        <div class="pill">Total quota: <span id="totQuota" class="mono">0</span></div>
-        <div class="pill">Remaining: <span id="totRemain" class="mono">0</span></div>
-      </div>
-      <div id="status" class="muted" style="margin-top:10px"></div>
-    </div>
-
-    <div class="card">
-      <div class="flex">
-        <button class="ghost" id="addRow">+ Add row</button>
-        <div class="fill"></div>
-        <div class="actions flex">
-          <button id="append" class="brand">Append Links</button>
-          <button id="replace" class="danger">Replace All</button>
-        </div>
-      </div>
-
-      <div style="overflow:auto;margin-top:10px">
-        <table>
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>Referral Link URL</th>
-              <th>Weekly Target</th>
-              <th>Date Added</th>
-              <th>Note</th>
-              <th class="nowrap">Used</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody id="tbody"></tbody>
-        </table>
-      </div>
-    </div>
-
-    <div class="card">
-      <h3 style="margin-top:0">Import / Export</h3>
-      <div class="grid">
-        <textarea id="json" rows="7" placeholder='[{"url":"https://acorns.com/invite/abc","weekly":2,"dateAdded":"2025-10-20","note":"Promo A"}]' style="width:100%"></textarea>
-        <div class="flex right">
-          <button class="ghost" id="fillFromRows">Export table → JSON</button>
-          <button class="ghost" id="loadToRows">Import JSON → table</button>
-        </div>
-      </div>
-    </div>
-
-    <div class="center muted" style="margin-top:8px">
-      <small>Not affiliated with Acorns. Easy Forty admin console.</small>
+  <div class="card row">
+    <div class="pill">Total used: <span id="totUsed" class="mono">0</span></div>
+    <div class="pill">Total quota: <span id="totQuota" class="mono">0</span></div>
+    <div class="pill">Remaining: <span id="totRemain" class="mono">0</span></div>
+    <div class="right row">
+      <button id="addRow" class="ghost">+ Add row</button>
+      <button id="bulkWeekly" class="ghost">Bulk set weekly</button>
+      <button id="append" class="brand">Append Links</button>
+      <button id="replace" class="danger">Replace All</button>
     </div>
   </div>
 
+  <div class="card row" style="align-items:center">
+    <div class="row" style="gap:16px">
+      <label class="row" style="gap:10px;align-items:center">
+        <span class="weak">Auto-reset used on Mondays</span>
+        <span class="switch"><input type="checkbox" id="toggleReset"><span class="slider"></span></span>
+      </label>
+      <button id="resetNow" class="ghost">Reset used now</button>
+      <div class="muted">Resets used counts to 0 each Monday (UTC) once per week.</div>
+    </div>
+    <div class="right muted" id="status"></div>
+  </div>
+
+  <div class="card" style="overflow:auto">
+    <table>
+      <thead>
+      <tr>
+        <th></th>
+        <th><input type="checkbox" id="selectAll" class="chk" title="Select all"></th>
+        <th>#</th>
+        <th>Referral Link URL</th>
+        <th>Weekly Target</th>
+        <th>Date Added</th>
+        <th>Note</th>
+        <th class="mono">Used</th>
+        <th>Delete</th>
+      </tr>
+      </thead>
+      <tbody id="tbody"></tbody>
+    </table>
+  </div>
+
+  <textarea id="jsonIO" rows="8" class="card" style="width:100%;display:none"></textarea>
+</div>
+
 <script>
-const T = [];
+const T = [];              // table model
+let cfg = { autoResetWeekly:false };
 const tbody = document.getElementById('tbody');
 const statusEl = document.getElementById('status');
 
-function setStatus(msg, ok=false){
-  statusEl.className = ok ? 'ok' : (msg ? 'bad' : 'muted');
+function setStatus(msg, type='') {
+  statusEl.className = type==='ok' ? 'ok' : (type==='bad' ? 'bad' : 'muted');
   statusEl.textContent = msg || '';
 }
-function fmt(n){ return new Intl.NumberFormat().format(n || 0); }
+function fmt(n){ return new Intl.NumberFormat().format(n||0); }
 
-function render(){
-  tbody.innerHTML = '';
-  T.forEach((row, i)=>{
-    const tr = document.createElement('tr');
-    tr.innerHTML = `
-      <td class="mono">${i+1}</td>
-      <td><input type="text" value="${row.url||''}" placeholder="https://acorns.com/invite/..." style="width:100%"></td>
-      <td><input type="number" value="${row.weekly ?? row.quota ?? 0}" min="0" step="1" style="width:120px"></td>
-      <td><input type="date" value="${(row.dateAdded||'').slice(0,10)}" style="width:160px"></td>
-      <td><input type="text" value="${row.note||''}" placeholder="note" style="width:100%"></td>
-      <td class="mono" style="text-align:center">${row.used ?? 0}</td>
-      <td><button data-del="${i}" class="ghost">Remove</button></td>
-    `;
-    tbody.appendChild(tr);
-  });
-}
-
-tbody.addEventListener('input', (e)=>{
-  const tr = e.target.closest('tr'); if(!tr) return;
-  const idx = [...tbody.children].indexOf(tr);
-  const [urlEl, weeklyEl, dateEl, noteEl] = tr.querySelectorAll('input');
-  T[idx].url = urlEl.value.trim();
-  T[idx].weekly = Number(weeklyEl.value || 0);
-  T[idx].dateAdded = dateEl.value || null;
-  T[idx].note = noteEl.value;
-});
-
-tbody.addEventListener('click', (e)=>{
-  const del = e.target.getAttribute('data-del');
-  if(del!==null){
-    T.splice(Number(del),1);
-    render();
-  }
-});
-
-document.getElementById('addRow').onclick = ()=>{ T.push({url:'', weekly:0, dateAdded:new Date().toISOString().slice(0,10), note:'', used:0}); render(); };
-
-document.getElementById('fillFromRows').onclick = ()=>{
-  const data = T.map(r=>({ url:r.url, weekly:Number(r.weekly||r.quota||0), dateAdded:r.dateAdded||null, note:r.note||'' }));
-  document.getElementById('json').value = JSON.stringify(data, null, 2);
-};
-
-document.getElementById('loadToRows').onclick = ()=>{
-  try{
-    const parsed = JSON.parse(document.getElementById('json').value);
-    const arr = Array.isArray(parsed) ? parsed : (parsed.items || []);
-    T.length = 0;
-    arr.forEach(it=> T.push({ url: String(it.url||'').trim(), weekly: Number(it.weekly ?? it.quota ?? 0), dateAdded: it.dateAdded || '', note: it.note || '', used: Number(it.used||0) }));
-    render();
-  }catch(e){ setStatus('Invalid JSON: '+e.message); }
-};
-
-document.getElementById('load').onclick = async ()=>{
-  setStatus('Loading...');
-  try{
-    const key = document.getElementById('key').value.trim();
-    const res = await fetch('/api/admin/stats', { headers: {'X-Admin-Key': key}});
-    const text = await res.text();
-    if(!res.ok){
-      setStatus(text || 'Unauthorized. Make sure ADMIN_KEY is set for this deployment and matches.', false);
-      return;
-    }
-    const data = JSON.parse(text);
-    const items = data.items || data.links?.items || [];
-    T.length=0;
-    items.forEach(it=> T.push({ url: it.url, weekly: Number(it.quota||it.weekly||0), dateAdded: it.dateAdded||'', note: it.note||'', used: Number(it.used||0) }));
-    render();
-    updateTotals(data);
-    setStatus('Loaded.', true);
-  }catch(e){ setStatus('Failed to load: '+e.message); }
-};
-
-async function submit(mode){
-  setStatus('Submitting...');
-  const key = document.getElementById('key').value.trim();
-  if(!key){ setStatus('Enter Admin Key first.'); return; }
-  const payload = T.map(r=>({ url: r.url, weekly: Number(r.weekly||r.quota||0), dateAdded: r.dateAdded || null, note: r.note || '' }));
-  try{
-    const res = await fetch('/api/admin/seed?mode='+mode, {
-      method:'POST',
-      headers:{ 'Content-Type':'application/json', 'X-Admin-Key': key },
-      body: JSON.stringify(payload)
-    });
-    const text = await res.text();
-    if(!res.ok){ setStatus(text || 'Unauthorized or server error. See tips below.'); return; }
-    setStatus('Saved: '+text, true);
-    document.getElementById('load').click();
-  }catch(e){
-    setStatus('Error: '+e.message);
-  }
-}
-
-document.getElementById('append').onclick = ()=> submit('append');
-document.getElementById('replace').onclick = ()=> submit('replace');
-
-function updateTotals(data){
-  const items = data.items || data.links?.items || [];
+function renderTotals(items){
   const used = items.reduce((a,b)=>a+Number(b.used||0),0);
   const quota = items.reduce((a,b)=>a+Number(b.quota||0),0);
   document.getElementById('totUsed').textContent = fmt(used);
   document.getElementById('totQuota').textContent = fmt(quota);
-  document.getElementById('totRemain').textContent = fmt(quota - used);
+  document.getElementById('totRemain').textContent = fmt(quota-used);
   let active = '—';
   for(let i=0;i<items.length;i++){
-    const it=items[i]; if(Number(it.used||0) < Number(it.quota||0)){ active = i+1; break; }
+    const it=items[i]; if(Number(it.used||0)<Number(it.quota||0)){ active = i+1; break; }
   }
   document.getElementById('activeIdx').textContent = active;
 }
+
+function rowEl(r,i){
+  const tr = document.createElement('tr');
+  tr.setAttribute('draggable','true');
+  tr.dataset.idx = i;
+  tr.innerHTML = `
+    <td class="handle drag">⋮⋮</td>
+    <td><input type="checkbox" class="chk sel"></td>
+    <td class="mono">${i+1}</td>
+    <td><input type="text" class="url" value="${r.url||''}" placeholder="https://acorns.com/invite/..." style="width:100%"></td>
+    <td><input type="number" class="weekly" value="${r.quota ?? r.weekly ?? 0}" min="0" step="1" style="width:110px"></td>
+    <td><input type="date" class="date" value="${(r.dateAdded||'').slice(0,10)}" style="width:150px"></td>
+    <td><input type="text" class="note" value="${r.note||''}" placeholder="note" style="width:100%"></td>
+    <td class="mono" style="text-align:center">${r.used ?? 0}</td>
+    <td><button class="ghost del">Remove</button></td>
+  `;
+  return tr;
+}
+
+function render(){
+  tbody.innerHTML='';
+  T.forEach((r,i)=> tbody.appendChild(rowEl(r,i)));
+  renderTotals(T);
+}
+document.getElementById('addRow').onclick = ()=>{ T.push({url:'', quota:0, dateAdded:new Date().toISOString().slice(0,10), note:'', used:0}); render(); };
+
+tbody.addEventListener('input', (e)=>{
+  const tr=e.target.closest('tr'); if(!tr) return;
+  const i=Number(tr.dataset.idx);
+  const r=T[i];
+  if(e.target.classList.contains('url')) r.url = e.target.value.trim();
+  if(e.target.classList.contains('weekly')) r.quota = Number(e.target.value||0);
+  if(e.target.classList.contains('date')) r.dateAdded = e.target.value || null;
+  if(e.target.classList.contains('note')) r.note = e.target.value;
+});
+
+tbody.addEventListener('click', (e)=>{
+  if(e.target.classList.contains('del')){
+    const i=Number(e.target.closest('tr').dataset.idx);
+    T.splice(i,1); render();
+  }
+});
+
+let dragIdx=null;
+tbody.addEventListener('dragstart', (e)=>{
+  const tr=e.target.closest('tr'); if(!tr) return;
+  dragIdx=Number(tr.dataset.idx); e.dataTransfer.effectAllowed='move';
+});
+tbody.addEventListener('dragover', (e)=>{ e.preventDefault(); });
+tbody.addEventListener('drop', (e)=>{
+  e.preventDefault();
+  const tr=e.target.closest('tr'); if(!tr || dragIdx===null) return;
+  const dropIdx=Number(tr.dataset.idx);
+  if(dropIdx===dragIdx) return;
+  const [moved]=T.splice(dragIdx,1);
+  T.splice(dropIdx,0,moved);
+  dragIdx=null; render();
+});
+
+document.getElementById('selectAll').addEventListener('change', (e)=>{
+  tbody.querySelectorAll('.sel').forEach(cb=> cb.checked=e.target.checked);
+});
+
+document.getElementById('bulkWeekly').onclick = ()=>{
+  const selIdx = [...tbody.querySelectorAll('.sel')].map((cb,i)=> cb.checked?i:-1).filter(i=>i>=0);
+  if(!selIdx.length){ setStatus('Select at least one row.', 'bad'); return; }
+  const v = prompt('Set weekly target for selected rows to:');
+  if(v===null) return;
+  const n = Number(v);
+  if(!(n>=0)){ setStatus('Enter a valid number.', 'bad'); return; }
+  selIdx.forEach(i=> T[i].quota = n);
+  render();
+  setStatus(`Set weekly=${n} on ${selIdx.length} rows.`, 'ok');
+};
+
+function key(){ return document.getElementById('key').value.trim(); }
+
+document.getElementById('load').onclick = async ()=>{
+  setStatus('Loading...');
+  try{
+    const res = await fetch('/api/admin/stats', { headers: {'X-Admin-Key': key()} });
+    const text = await res.text();
+    if(!res.ok){ setStatus(text || 'Unauthorized', 'bad'); return; }
+    const data = JSON.parse(text);
+    cfg = data.config || { autoResetWeekly:false };
+    document.getElementById('toggleReset').checked = !!cfg.autoResetWeekly;
+    T.length=0;
+    (data.items||[]).forEach(it=> T.push({ url: it.url, quota:Number(it.quota||0), used:Number(it.used||0), dateAdded: it.dateAdded||'', note: it.note||'' }));
+    render();
+    setStatus('Loaded.', 'ok');
+  }catch(e){ setStatus(e.message, 'bad'); }
+};
+
+async function submit(mode){
+  if(!key()) return setStatus('Enter Admin Key first.', 'bad');
+  setStatus('Saving...');
+  const payload = T.map(r=>({ url:r.url, weekly:Number(r.quota||0), dateAdded:r.dateAdded||null, note:r.note||'' }));
+  const res = await fetch('/api/admin/seed?mode='+mode, {
+    method:'POST',
+    headers:{ 'Content-Type':'application/json', 'X-Admin-Key': key() },
+    body: JSON.stringify(payload)
+  });
+  const t = await res.text();
+  if(!res.ok){ setStatus(t||'Error', 'bad'); return; }
+  setStatus(t, 'ok');
+  document.getElementById('load').click();
+}
+document.getElementById('append').onclick = ()=> submit('append');
+document.getElementById('replace').onclick = ()=> submit('replace');
+
+document.getElementById('toggleReset').addEventListener('change', async (e)=>{
+  if(!key()) return setStatus('Enter Admin Key first.', 'bad');
+  const res = await fetch('/api/admin/config', {
+    method:'POST',
+    headers:{ 'Content-Type':'application/json', 'X-Admin-Key': key() },
+    body: JSON.stringify({ autoResetWeekly: e.target.checked })
+  });
+  const t = await res.text();
+  setStatus(res.ok ? 'Saved weekly auto-reset.' : t, res.ok ? 'ok':'bad');
+});
+
+document.getElementById('resetNow').onclick = async ()=>{
+  if(!key()) return setStatus('Enter Admin Key first.', 'bad');
+  const res = await fetch('/api/admin/config?action=resetNow', { method:'POST', headers:{ 'X-Admin-Key': key() }});
+  const t = await res.text();
+  setStatus(res.ok ? 'Used counts reset.' : t, res.ok ? 'ok':'bad');
+  if(res.ok) document.getElementById('load').click();
+};
+
+const jsonIO = document.getElementById('jsonIO');
+document.getElementById('exportBtn').onclick = ()=>{
+  jsonIO.style.display='block';
+  jsonIO.value = JSON.stringify(T.map(r=>({url:r.url,weekly:r.quota,dateAdded:r.dateAdded,note:r.note,used:r.used||0})), null, 2);
+  jsonIO.scrollIntoView({behavior:'smooth'});
+};
+document.getElementById('importBtn').onclick = ()=>{
+  jsonIO.style.display='block';
+  jsonIO.placeholder='Paste array JSON here, then press Enter in this box';
+  jsonIO.onkeydown = (e)=>{
+    if(e.key==='Enter' && (e.metaKey || e.ctrlKey)){
+      try{
+        const arr = JSON.parse(jsonIO.value);
+        T.length=0;
+        arr.forEach(it=> T.push({ url: String(it.url||'').trim(), quota:Number(it.weekly ?? it.quota ?? 0), used:Number(it.used||0), dateAdded: it.dateAdded||'', note: it.note||'' }));
+        render(); setStatus('Imported.', 'ok');
+      }catch(err){ setStatus('Invalid JSON: '+err.message, 'bad'); }
+      e.preventDefault();
+    }
+  };
+};
 </script>
 </body>
 </html>
