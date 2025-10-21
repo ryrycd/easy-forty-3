@@ -1,118 +1,184 @@
-// public/app.js
-const s1 = document.getElementById('s1');
-const s2 = document.getElementById('s2');
-const s3 = document.getElementById('s3');
-const ok = document.getElementById('ok');
-const bad = document.getElementById('bad');
+// Typeform-style progressive flow for Easy Forty
+const steps = ['q1','q2','q3v','q3z','q4'];
+const fill = document.getElementById('fill');
+const stepCount = document.getElementById('stepCount');
+const msg = document.getElementById('msg');
 
 const phoneEl = document.getElementById('phone');
 const consentEl = document.getElementById('consent');
-
-const chips = [...document.querySelectorAll('.chip[data-method]')];
-const venmoFields = document.getElementById('venmoFields');
-const zelleFields = document.getElementById('zelleFields');
 const venmoEl = document.getElementById('venmo');
-const zelleSame = document.getElementById('zelleSame');
-const zelleOther = document.getElementById('zelleOther');
-const zelleInputWrap = document.getElementById('zelleInputWrap');
-const zelleEl = document.getElementById('zelle');
+const zelleOtherWrap = document.getElementById('zelleOtherWrap');
+const zelleOtherEl = document.getElementById('zelleOther');
 
-let payoutMethod = 'venmo';
-let zelleUsePhone = false;
+let current = 'q1';
+let payoutMethod = null;        // 'venmo' | 'zelle'
+let zelleChoice = null;         // 'same'  | 'other'
 
-function show(step){ [s1,s2,s3].forEach(x=>x.classList.remove('active')); step.classList.add('active'); }
-function showOk(){ ok.classList.remove('hidden'); }
-function showBad(msg){ bad.textContent=msg; bad.classList.remove('hidden'); }
-function hideAlerts(){ ok.classList.add('hidden'); bad.classList.add('hidden'); }
-
-function normalizePhone(raw){
-  const digits = (raw || '').replace(/\D+/g,'');
-  if(!digits) return null;
-  if(digits.startsWith('1') && digits.length===11) return '+'+digits;
-  if(digits.length===10) return '+1'+digits;
-  if(digits.length>=11 && (raw||'').startsWith('+')) return raw;
-  return null;
+function show(id){
+  steps.forEach(s => {
+    const el = document.getElementById(s);
+    if (!el) return;
+    el.classList.toggle('active', s === id);
+  });
+  current = id;
+  const idx = stepIndex(current);
+  const total = 4; // we present as 4 questions total
+  fill.style.width = (idx/4)*100 + '%';
+  stepCount.textContent = `Step ${idx} of ${total}`;
+  hideError();
 }
 
-// Step 1 → Step 2
-document.getElementById('next1').onclick = ()=>{
-  hideAlerts();
-  const e164 = normalizePhone(phoneEl.value.trim());
-  if(!e164){ showBad('Please enter a valid U.S. phone number.'); return; }
-  show(s2);
-};
+function stepIndex(id){
+  // Map to visual count (q3v and q3z both count as step 3)
+  if (id === 'q1') return 1;
+  if (id === 'q2') return 2;
+  if (id === 'q3v' || id === 'q3z') return 3;
+  if (id === 'q4') return 4;
+  return 1;
+}
 
-// payout chips
-chips.forEach(ch=>{
-  ch.addEventListener('click', ()=>{
-    chips.forEach(c=>c.classList.remove('active'));
-    ch.classList.add('active');
-    payoutMethod = ch.dataset.method;
-    if(payoutMethod==='venmo'){ venmoFields.classList.remove('hidden'); zelleFields.classList.add('hidden'); }
-    else { venmoFields.classList.add('hidden'); zelleFields.classList.remove('hidden'); }
-  });
-});
-zelleSame.addEventListener('click', ()=>{
-  zelleUsePhone = true; zelleInputWrap.classList.add('hidden');
-  zelleSame.classList.add('active'); zelleOther.classList.remove('active');
-});
-zelleOther.addEventListener('click', ()=>{
-  zelleUsePhone = false; zelleInputWrap.classList.remove('hidden');
-  zelleOther.classList.add('active'); zelleSame.classList.remove('active');
-});
+function showError(text){
+  msg.textContent = text;
+  msg.style.display = 'block';
+  const active = document.querySelector('.q.active');
+  if (active){ active.classList.remove('shake'); void active.offsetWidth; active.classList.add('shake'); }
+}
+function hideError(){ msg.style.display = 'none'; }
 
-document.getElementById('back2').onclick = ()=> show(s1);
+function normalizePhone(raw){
+  const digits = String(raw||'').replace(/\D+/g,'');
+  if (!digits) return null;
+  if (digits.startsWith('1') && digits.length===11) return '+'+digits;
+  if (digits.length===10) return '+1'+digits;
+  if (digits.length>=11 && String(raw).startsWith('+')) return String(raw);
+  return null;
+}
+function isEmail(s){ return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(s||'')); }
+function isVenmo(s){ return /^@?[A-Za-z0-9_.-]{3,32}$/.test(String(s||'')); }
 
-// Step 2 → Step 3
-document.getElementById('next2').onclick = ()=>{
-  hideAlerts();
-  if(payoutMethod==='venmo'){
-    const v=(venmoEl.value||'').trim();
-    if(!/^@?[A-Za-z0-9_.-]{3,32}$/.test(v)){ showBad('Enter a valid @Venmo username.'); return; }
-  } else {
-    if(!zelleUsePhone){
-      const z=(zelleEl.value||'').trim();
-      const ok = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(z) || normalizePhone(z);
-      if(!ok){ showBad('Enter a valid email or phone for Zelle.'); return; }
+function choiceGroup(selector){
+  const nodes = Array.from(document.querySelectorAll(selector));
+  return {
+    nodes,
+    clear(){ nodes.forEach(n=>n.classList.remove('active')); },
+    value(){ const n = nodes.find(n=>n.classList.contains('active')); return n ? (n.dataset.method||n.dataset.zelle) : null; },
+    bind(){
+      nodes.forEach(n=> n.addEventListener('click', ()=> {
+        this.clear(); n.classList.add('active');
+        const m = n.dataset.method || n.dataset.zelle;
+        if (m === 'zelle') {
+          payoutMethod = 'zelle';
+        } else if (m === 'venmo') {
+          payoutMethod = 'venmo';
+        } else if (m === 'same' || m === 'other') {
+          zelleChoice = m;
+          zelleOtherWrap.style.display = (m === 'other') ? 'block' : 'none';
+        }
+      }));
     }
-  }
-  show(s3);
-};
-document.getElementById('back3').onclick = ()=> show(s2);
+  };
+}
 
-// Finish → POST register
-document.getElementById('finish').onclick = async ()=>{
-  hideAlerts();
+// Bind choices
+const payoutChoices = choiceGroup('.choice[data-method]');
+payoutChoices.bind();
+const zelleChoices = choiceGroup('.choice[data-zelle]');
+zelleChoices.bind();
+
+// Navigation
+document.getElementById('next1').addEventListener('click', ()=>{
+  const e164 = normalizePhone(phoneEl.value.trim());
+  if (!e164) return showError('Please enter a valid U.S. phone number.');
+  show('q2');
+});
+
+document.getElementById('back2').addEventListener('click', ()=> show('q1'));
+document.getElementById('next2').addEventListener('click', ()=>{
+  if (payoutMethod === 'venmo') show('q3v');
+  else if (payoutMethod === 'zelle') show('q3z');
+  else showError('Choose Venmo or Zelle.');
+});
+
+// Venmo path
+document.getElementById('back3v').addEventListener('click', ()=> show('q2'));
+document.getElementById('next3v').addEventListener('click', ()=>{
+  const v = venmoEl.value.trim();
+  if (!isVenmo(v)) return showError('Enter a valid @Venmo username.');
+  show('q4');
+});
+
+// Zelle path
+document.getElementById('back3z').addEventListener('click', ()=> show('q2'));
+document.getElementById('next3z').addEventListener('click', ()=>{
+  if (zelleChoice === 'same') { show('q4'); return; }
+  if (zelleChoice === 'other') {
+    const z = zelleOtherEl.value.trim();
+    const ok = isEmail(z) || normalizePhone(z);
+    if (!ok) return showError('Enter a valid email or phone for Zelle.');
+    show('q4');
+    return;
+  }
+  showError('Choose an option for Zelle.');
+});
+
+// Finish
+document.getElementById('back4').addEventListener('click', ()=>{
+  if (payoutMethod === 'venmo') show('q3v'); else show('q3z');
+});
+document.getElementById('finish').addEventListener('click', async ()=>{
   const phone = normalizePhone(phoneEl.value.trim());
-  if(!phone){ showBad('Please enter a valid U.S. phone number.'); return; }
-  if(!consentEl.checked){ showBad('Please agree to receive SMS to continue.'); return; }
+  if (!phone) return showError('Please enter a valid U.S. phone number.');
+  if (!consentEl.checked) return showError('Please agree to receive a few SMS to continue.');
 
   let handle = '';
-  if(payoutMethod==='venmo'){
-    handle = (venmoEl.value||'').trim();
-    if(handle && !handle.startsWith('@')) handle='@'+handle;
+  if (payoutMethod === 'venmo') {
+    let v = venmoEl.value.trim();
+    if (!v.startsWith('@')) v = '@' + v;
+    handle = v;
   } else {
-    handle = zelleUsePhone ? `zelle:${phone}` : `zelle:${(zelleEl.value||'').trim()}`;
+    if (zelleChoice === 'same') {
+      handle = `zelle:${phone}`;
+    } else {
+      const z = zelleOtherEl.value.trim();
+      handle = `zelle:${z}`;
+    }
   }
 
   const btn = document.getElementById('finish');
-  btn.disabled=true; btn.textContent='Sending...';
+  btn.disabled = true; btn.textContent = 'Sending…';
+  hideError();
 
   try{
     const res = await fetch('/api/register', {
       method:'POST',
       headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ phone, handle, consent:true })
+      body: JSON.stringify({ phone, handle, consent: true })
     });
     const data = await res.json();
-    if(!res.ok){ throw new Error(data.error || 'Failed to send.'); }
-    showOk();
-    // restart experience for next user
-    phoneEl.value=''; venmoEl.value=''; zelleEl.value=''; consentEl.checked=false;
-    show(s1);
+    if (!res.ok) throw new Error(data.error || 'Failed to send.');
+    document.getElementById('ok').style.display = 'block';
+    // reset for next visitor
+    venmoEl.value = ''; zelleOtherEl.value = ''; consentEl.checked = false;
+    payoutMethod = null; zelleChoice = null;
+    payoutChoices.clear(); zelleChoices.clear();
+    zelleOtherWrap.style.display = 'none';
+    show('q1');
   }catch(err){
-    showBad(err.message || 'Could not send right now. Try again later.');
+    showError(err.message || 'Could not send right now. Try again later.');
   }finally{
-    btn.disabled=false; btn.textContent='Text me the link →';
+    btn.disabled = false; btn.textContent = 'Text me the link →';
   }
-};
+});
+
+// Enter to continue convenience
+document.addEventListener('keydown', (e)=>{
+  if (e.key !== 'Enter') return;
+  const active = document.querySelector('.q.active');
+  if (!active) return;
+  e.preventDefault();
+  if (active.id === 'q1') document.getElementById('next1').click();
+  else if (active.id === 'q2') document.getElementById('next2').click();
+  else if (active.id === 'q3v') document.getElementById('next3v').click();
+  else if (active.id === 'q3z') document.getElementById('next3z').click();
+  else if (active.id === 'q4') document.getElementById('finish').click();
+});
