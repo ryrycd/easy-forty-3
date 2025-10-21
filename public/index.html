@@ -4,85 +4,112 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Easy Forty — $40 Acorns Bonus</title>
-  <meta name="description" content="Get $40 with Acorns. Opt in, get a unique link by SMS, finish the steps, and get paid via Venmo or Zelle." />
+  <meta name="description" content="Get $40 the simple way: we text your unique link, you complete the steps, and we pay you via Venmo or Zelle." />
   <link rel="icon" href="/assets/favicon.svg">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <script defer src="/app.js"></script>
   <style>
-    :root { --bg:#0b0c0f; --card:#12141a; --muted:#9aa3b2; --text:#e6e8ec; --brand:#4f46e5; --brand2:#22c55e; }
-    *{box-sizing:border-box} body{margin:0;background:linear-gradient(180deg,var(--bg),#0f1117);color:var(--text);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,'Helvetica Neue','Apple Color Emoji','Segoe UI Emoji',sans-serif}
-    .wrap{max-width:560px;margin:0 auto;padding:28px}
-    .hero{padding:24px 18px 10px}
-    .badge{display:inline-flex;gap:8px;align-items:center;border:1px solid #253046;background:#0d1117;color:#a4b0c0;border-radius:999px;padding:6px 10px;font-size:12px;margin-bottom:10px}
-    .card{background:radial-gradient(1200px 500px at 100% -50%,rgba(79,70,229,.18),transparent),linear-gradient(180deg,var(--card),#0f1217);border:1px solid #1f2430;padding:22px;border-radius:18px;box-shadow:0 8px 30px rgba(0,0,0,.35)}
-    h1{font-size:28px;margin:10px 0 6px;line-height:1.15}
-    p{color:var(--muted);line-height:1.6}
-    .steps{margin-top:10px;display:grid;gap:10px}
-    .step{display:flex;gap:12px;align-items:flex-start}
-    .num{flex:0 0 28px;height:28px;display:grid;place-items:center;border-radius:10px;background:#191e29;color:#9aa3b2;border:1px solid #232a38;font-weight:600}
-    label{display:block;font-weight:600;margin:12px 0 6px}
-    input[type=tel], input[type=text]{width:100%;padding:14px 14px;border-radius:12px;border:1px solid #273043;background:#0e131a;color:#e5e7eb;outline:none}
-    input[type=checkbox]{transform:scale(1.15);margin-right:10px}
-    button{display:inline-flex;align-items:center;justify-content:center;gap:10px;border:none;border-radius:12px;padding:14px 16px;font-weight:700;background:linear-gradient(90deg,var(--brand),#7c3aed);color:white;width:100%;cursor:pointer}
-    button.secondary{background:linear-gradient(90deg,#1f2937,#374151)}
-    .fine{font-size:12px;color:#9aa3b2}
-    .trust{display:flex;gap:10px;flex-wrap:wrap;margin:8px 0 0}
+    :root{--bg:#0b0c0f;--panel:#0f1218;--card:#111624;--line:#1d2636;--text:#e7eaf0;--muted:#9aa3b2;--brand:#4f46e5;--brand2:#22c55e}
+    *{box-sizing:border-box}
+    body{margin:0;background:radial-gradient(1200px 600px at 100% -20%,rgba(79,70,229,.25),transparent),linear-gradient(180deg,var(--bg),#0f1117);color:var(--text);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,'Helvetica Neue',sans-serif}
+    .wrap{max-width:720px;margin:0 auto;padding:28px}
+    .hero{display:flex;flex-direction:column;align-items:center;text-align:center;gap:8px;margin:10px 0 18px}
+    .badge{display:inline-flex;gap:8px;align-items:center;border:1px solid #253046;background:#0d1117;color:#a4b0c0;border-radius:999px;padding:6px 10px;font-size:12px}
+    h1{font-size:32px;margin:6px 0 0;line-height:1.2}
+    .sub{color:var(--muted);max-width:600px}
+    .card{background:linear-gradient(180deg,var(--card),#0e1218);border:1px solid var(--line);border-radius:18px;box-shadow:0 12px 40px rgba(0,0,0,.4);padding:18px}
+    .step{display:none;animation:fade .22s ease}
+    .step.active{display:block}
+    @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+    label{font-weight:600}
+    input[type=tel],input[type=text],input[type=email]{width:100%;padding:14px;border-radius:12px;border:1px solid #273043;background:#0e131a;color:#e5e7eb;outline:none}
+    .btn{display:inline-flex;align-items:center;gap:10px;border:none;border-radius:12px;padding:14px 16px;font-weight:800;background:linear-gradient(90deg,var(--brand),#7c3aed);color:white;width:100%;justify-content:center;cursor:pointer}
+    .btn.ghost{background:#111726;border:1px dashed #2a364c}
+    .btn.muted{background:#162033;color:#9aa3b2;border:1px solid #263046}
+    .fine{font-size:12px;color:var(--muted)}
+    .trust{display:flex;gap:10px;flex-wrap:wrap;margin:14px 0 0}
     .trust span{font-size:11px;color:#aab1bf;border:1px solid #283140;border-radius:999px;padding:6px 10px;background:#0e1218}
+    .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+    .choice{display:flex;gap:10px}
+    .chip{padding:10px 12px;border-radius:12px;border:1px solid #283140;background:#0e1218;color:#aeb8d6;cursor:pointer}
+    .chip.active{outline:2px solid #5b6fe8}
+    .hidden{display:none}
+    .ok{background:#102016;border:1px solid #183a22;color:#bfe8cb;padding:12px;border-radius:12px;margin:10px 0}
+    .bad{background:#221314;border:1px solid #4f2026;color:#f1b5bb;padding:12px;border-radius:12px;margin:10px 0}
     .footer{margin:14px 0 0;text-align:center}
     a{color:#9db7ff;text-decoration:none}
-    .hidden{display:none}
-    .success{background:#102016;border:1px solid #183a22;color:#bfe8cb;padding:12px;border-radius:12px;margin:10px 0}
-    .error{background:#221314;border:1px solid #4f2026;color:#f1b5bb;padding:12px;border-radius:12px;margin:10px 0}
   </style>
 </head>
 <body>
   <div class="wrap">
     <header class="hero">
-      <div class="badge"><img src="/assets/check.svg" width="16" height="16" alt=""> Legit $40 Acorns Bonus</div>
-      <h1>Get $40 in 3 steps</h1>
-      <p>Join Acorns via text, deposit $5, send proof by text, and we pay you via Venmo or Zelle. Designed for speed and trust.</p>
+      <div class="badge">🔒 Private • No spam • Simple payout</div>
+      <h1>Get $40 with Acorns — the easy way</h1>
+      <p class="sub">We text your unique link, you deposit $5, reply with a screenshot, and we pay you via Venmo or Zelle. Personal referral program. Not affiliated with Acorns.</p>
     </header>
 
     <main class="card">
       <div id="msg" class="hidden"></div>
-      <form id="flow" novalidate>
-        <div class="steps">
-          <div class="step">
-            <div class="num">1</div>
-            <div style="flex:1">
-              <label for="phone">Your mobile number</label>
-              <input id="phone" name="phone" type="tel" inputmode="tel" placeholder="(555) 555-5555" autocomplete="tel" required>
-              <p class="fine">We’ll text your unique link immediately. U.S. + Canada only.</p>
-            </div>
+
+      <!-- Step 1: Phone -->
+      <div id="s1" class="step active">
+        <label for="phone">Your mobile number</label>
+        <input id="phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="(555) 555-5555" />
+        <p class="fine">We’ll text your unique link immediately. U.S. + Canada only.</p>
+        <div class="row">
+          <button class="btn" id="next1">Continue</button>
+        </div>
+      </div>
+
+      <!-- Step 2: Payout method -->
+      <div id="s2" class="step">
+        <label>Payout method</label>
+        <div class="choice" role="group" aria-label="Payout method">
+          <div class="chip active" data-method="venmo">@ Venmo</div>
+          <div class="chip" data-method="zelle">Zelle</div>
+        </div>
+        <div id="venmoFields" style="margin-top:12px">
+          <label for="venmo">@Venmo username</label>
+          <input id="venmo" type="text" placeholder="@yourname" />
+          <p class="fine">We use this only to send your payout after verification.</p>
+        </div>
+        <div id="zelleFields" class="hidden" style="margin-top:12px">
+          <label>Zelle contact</label>
+          <div class="row">
+            <div class="chip" id="zelleSame">Use my phone</div>
+            <div class="chip" id="zelleOther">Enter email/phone</div>
           </div>
-          <div class="step">
-            <div class="num">2</div>
-            <div style="flex:1">
-              <label for="handle">Payout handle (Venmo @ or Zelle name)</label>
-              <input id="handle" name="handle" type="text" placeholder="@yourname or Zelle name" required>
-              <p class="fine">We’ll use this only to pay you after verification.</p>
-            </div>
-          </div>
-          <div class="step">
-            <div class="num">3</div>
-            <div style="flex:1">
-              <label><input type="checkbox" id="consent" required> I agree to receive up to 3 SMS/MMS for this offer from Easy Forty. <a href="/privacy.html" target="_blank" rel="noopener">Privacy</a> · <a href="/terms.html" target="_blank" rel="noopener">Terms</a>. Msg &amp; data rates may apply. Reply STOP to opt out, HELP for help.</label>
-            </div>
+          <div id="zelleInputWrap" class="hidden" style="margin-top:10px">
+            <input id="zelle" type="text" placeholder="email@domain.com or (555) 555-5555" />
           </div>
         </div>
-        <button id="submitBtn" type="submit">Text me the link →</button>
-      </form>
-      <div id="ok" class="success hidden">Check your texts—your unique link was sent. When you finish the steps, reply <b>DONE</b> to the text, then send a screenshot of the $5 deposit.</div>
-      <div id="bad" class="error hidden"></div>
+        <div class="row">
+          <button class="btn muted" id="back2">Back</button>
+          <button class="btn" id="next2">Continue</button>
+        </div>
+      </div>
+
+      <!-- Step 3: Consent -->
+      <div id="s3" class="step">
+        <label><input id="consent" type="checkbox"> I agree to receive up to 3 SMS/MMS for this offer from Easy Forty. <a href="/privacy.html" target="_blank" rel="noopener">Privacy</a> · <a href="/terms.html" target="_blank" rel="noopener">Terms</a>. Msg &amp; data rates may apply. Reply STOP to opt out, HELP for help.</label>
+        <div class="row" style="margin-top:12px">
+          <button class="btn muted" id="back3">Back</button>
+          <button class="btn" id="finish">Text me the link →</button>
+        </div>
+      </div>
+
+      <div id="ok" class="ok hidden">Check your texts—your unique link was sent. After you finish the steps, reply <b>DONE</b>, then send a screenshot showing the $5 deposit.</div>
+      <div id="bad" class="bad hidden"></div>
+
       <div class="trust">
         <span>Secure & privacy-first</span>
-        <span>1:1 support via text</span>
-        <span>No spam ever</span>
+        <span>Clear SMS consent</span>
+        <span>One-to-one support</span>
       </div>
       <div class="footer fine">
-        Not affiliated with Acorns. This is a personal referral program. Questions? <a href="mailto:support@easyforty.com">support@easyforty.com</a>
+        Questions? <a href="mailto:support@easyforty.com">support@easyforty.com</a>
       </div>
     </main>
   </div>
