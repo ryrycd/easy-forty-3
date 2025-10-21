@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Easy Forty — Admin</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+      body { margin:0; font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; background: #0b0c10; color: #eef2f7; }
+      .wrap { max-width: 1000px; margin: 0 auto; padding: 24px; }
+      header { display:flex; align-items:center; justify-content:space-between; }
+      .grid { display:grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 20px; }
+      .card { background: #12141a; border:1px solid rgba(255,255,255,0.08); border-radius: 14px; padding:16px; }
+      input, select, button, textarea { width:100%; padding:10px; border-radius:10px; border:1px solid rgba(255,255,255,0.12); background:#0f1115; color:#eef2f7; }
+      button { background: linear-gradient(135deg, #5eead4, #60a5fa); color:#0b0c10; font-weight:600; cursor:pointer; border:none; }
+      .list { list-style:none; padding:0; margin:0; }
+      .item { background:#0f1115; border:1px dashed rgba(255,255,255,0.15); border-radius:10px; padding:12px; margin-bottom:10px; display:flex; align-items:center; gap:10px; }
+      .handle { cursor:grab; padding:6px 8px; background:#111318; border-radius:8px; }
+      .row { display:flex; gap:10px; align-items:center; }
+      .row > * { flex:1; }
+      .small { font-size: 12px; color:#aab4c3; }
+      .pill { display:inline-block; padding:4px 8px; background:#13212c; border:1px solid #1e3a4a; border-radius:999px; font-size:12px; }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header>
+        <h2>Easy Forty — Admin</h2>
+        <div class="small">Drag-and-drop to reorder active referral links</div>
+      </header>
+      <div class="grid">
+        <div class="card">
+          <h3>Active Links</h3>
+          <ul id="links" class="list"></ul>
+          <div class="row">
+            <input id="new-url" type="text" placeholder="https://acorns.com/invite/..."/>
+            <input id="new-threshold" type="number" min="1" step="1" placeholder="Threshold (e.g. 2)"/>
+          </div>
+          <div class="row" style="margin-top:10px;">
+            <button id="add-link">Add Link</button>
+            <button id="save-order">Save Order</button>
+          </div>
+        </div>
+        <div class="card">
+          <h3>Settings</h3>
+          <label class="row"><span>Reset counts every Monday</span>
+            <select id="reset-monday"><option value="false">No</option><option value="true">Yes</option></select>
+          </label>
+          <label style="margin-top:10px;">
+            Notification email
+            <input id="notify-email" type="email" placeholder="you@example.com"/>
+          </label>
+          <label style="margin-top:10px;">
+            Admin password (to change)
+            <input id="new-admin-password" type="password" placeholder="Leave blank to keep current"/>
+          </label>
+          <div class="row" style="margin-top:10px;">
+            <button id="save-settings">Save Settings</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:20px;">
+        <h3>Recent Users</h3>
+        <div id="users" class="small">Loading…</div>
+      </div>
+    </div>
+
+    <script>
+      // Add Basic Auth header prompt
+      const _fetch = window.fetch;
+      window.fetch = (input, init={}) => {
+        init.headers = init.headers || {};
+        if (!('Authorization' in init.headers)) {
+          const pw = sessionStorage.getItem('admin_pw') || prompt('Enter admin password:');
+          if (pw) {
+            sessionStorage.setItem('admin_pw', pw);
+            (init.headers)['Authorization'] = 'Basic ' + btoa('admin:' + pw);
+          }
+        }
+        return _fetch(input, init);
+      }
+    </script>
+    <script type="module" src="/src/admin.ts"></script>
+  </body>
+</html>

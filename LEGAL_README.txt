@@ -1,0 +1,1 @@
+Legal pages are in /legal and served via Cloudflare Pages functions or routes. Update support contact details in .env variables when deploying.

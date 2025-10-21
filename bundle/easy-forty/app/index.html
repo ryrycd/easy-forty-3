@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Easy Forty — $40 for Acorns Referral</title>
+    <meta name="description" content="Get $40 for signing up with Acorns via our referral. Minimal steps, clear instructions, instant SMS guidance." />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+      :root {
+        --bg: #0b0c10;
+        --panel: #0f1115;
+        --text: #f0f3f7;
+        --muted: #a8b3c5;
+        --accent: #5eead4;
+        --accent-2: #60a5fa;
+        --danger: #ef4444;
+      }
+      * { box-sizing: border-box; }
+      html, body { height: 100%; }
+      body {
+        margin: 0; font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+        background: radial-gradient(1200px 800px at 80% -10%, rgba(96,165,250,0.2), transparent),
+                    radial-gradient(1000px 600px at 20% 110%, rgba(94,234,212,0.18), transparent), var(--bg);
+        color: var(--text);
+      }
+      .wrap { max-width: 720px; margin: 0 auto; padding: 24px; }
+      header { display:flex; align-items:center; justify-content:space-between; margin: 10px 0 24px; }
+      .logo { font-weight: 700; letter-spacing: 0.2px; display:flex; align-items:center; gap:10px; }
+      .badge { font-size: 12px; color: var(--muted); }
+      .card { background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03)); border:1px solid rgba(255,255,255,0.08); border-radius: 20px; padding: 22px; backdrop-filter: blur(10px);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+      }
+      .hero h1 { font-size: 28px; line-height: 1.15; margin: 0 0 10px; }
+      .hero p { color: var(--muted); margin: 0; }
+      .steps { margin-top: 16px; }
+      .step { display:none; }
+      .step.active { display:block; animation: appear .35s ease; }
+      @keyframes appear { from { opacity:0; transform: translateY(8px);} to{ opacity:1; transform: translateY(0);} }
+      .field { margin: 16px 0 10px; }
+      label { display:block; font-weight:600; margin-bottom:8px; }
+      input[type="tel"], input[type="text"], select { width: 100%; padding: 14px 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.04); color: var(--text); font-size: 16px; }
+      .btn { appearance:none; border:none; border-radius: 12px; padding: 14px 16px; font-weight:600; cursor:pointer; width: 100%; background: linear-gradient(135deg, var(--accent), var(--accent-2)); color:#0a0a0a; box-shadow: 0 6px 20px rgba(96,165,250,0.25); }
+      .btn:disabled { opacity: 0.7; filter: grayscale(0.2); }
+      .choices { display:flex; gap:10px; }
+      .choice { flex:1; border:1px solid rgba(255,255,255,0.12); padding:14px; border-radius:12px; text-align:center; cursor:pointer; background: rgba(255,255,255,0.05); }
+      .choice.active { outline:2px solid var(--accent-2); background: rgba(96,165,250,0.15); }
+      .muted { color: var(--muted); font-size: 14px; }
+      footer { margin: 28px 0 10px; color: var(--muted); font-size: 13px; text-align:center; }
+      a { color: var(--accent-2); text-decoration: none; }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header>
+        <div class="logo">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none"><path d="M12 2l3.09 6.26L22 9.27l-5 4.88L18.18 22 12 18.77 5.82 22 7 14.15l-5-4.88 6.91-1.01L12 2z" fill="url(#g)"/><defs><linearGradient id="g" x1="0" y1="0" x2="24" y2="24" gradientUnits="userSpaceOnUse"><stop stop-color="#60a5fa"/><stop offset="1" stop-color="#5eead4"/></linearGradient></defs></svg>
+          <span>Easy Forty</span>
+        </div>
+        <span class="badge">Secure • SMS Guided</span>
+      </header>
+
+      <section class="card hero">
+        <h1>Get $40 for joining Acorns with our referral.</h1>
+        <p>1) Enter your phone. 2) Answer a couple of quick questions. 3) Receive a text with your link and step-by-step instructions. Takes minutes.</p>
+      </section>
+
+      <section class="card steps">
+        <div class="step active" id="step-1">
+          <div class="field">
+            <label for="phone">Your mobile number</label>
+            <input id="phone" type="tel" inputmode="tel" placeholder="(555) 555-5555" autocomplete="tel" />
+            <div class="muted">We will text you instructions immediately. By continuing, you consent to receive SMS/MMS about this referral. Msg & data rates may apply. Reply STOP to opt out.</div>
+          </div>
+          <button class="btn" id="next-1">Continue</button>
+        </div>
+
+        <div class="step" id="step-2">
+          <p class="muted">Have you ever created an Acorns account before?</p>
+          <div class="choices" id="acorns-status">
+            <div class="choice" data-v="no">No</div>
+            <div class="choice" data-v="not_sure">Not sure</div>
+            <div class="choice" data-v="yes">Yes</div>
+          </div>
+          <div class="muted" id="acorns-note" style="margin-top:10px"></div>
+          <button class="btn" id="next-2" disabled>Continue</button>
+        </div>
+
+        <div class="step" id="step-3">
+          <p class="muted">How would you like to be paid?</p>
+          <div class="choices" id="payout-method">
+            <div class="choice" data-v="venmo">Venmo</div>
+            <div class="choice" data-v="zelle">Zelle</div>
+          </div>
+          <div class="field" id="venmo-field" style="display:none;">
+            <label for="venmo">Venmo handle</label>
+            <input id="venmo" type="text" placeholder="@your-handle" />
+          </div>
+          <div id="zelle-followup" style="display:none;">
+            <div class="muted" style="margin:8px 0;">Is your Zelle tied to the phone you entered?</div>
+            <div class="choices" id="zelle-same">
+              <div class="choice" data-v="yes">Yes</div>
+              <div class="choice" data-v="no">No</div>
+            </div>
+            <div class="field" id="zelle-field" style="display:none;">
+              <label for="zelle">Zelle phone or email</label>
+              <input id="zelle" type="text" placeholder="phone or email" />
+            </div>
+          </div>
+          <button class="btn" id="submit" disabled>Submit & Get Text</button>
+        </div>
+
+        <div class="step" id="step-4">
+          <h3>Check your phone</h3>
+          <p class="muted">We just sent you a text with next steps. If it doesn't arrive in a minute, double-check your number or try again.</p>
+        </div>
+      </section>
+
+      <footer>
+        <a href="/privacy">Privacy</a> • <a href="/terms">Terms</a> • © <span id="year"></span> Easy Forty
+      </footer>
+    </div>
+
+    <div id="root"></div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
