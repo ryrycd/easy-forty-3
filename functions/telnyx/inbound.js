@@ -5,7 +5,7 @@ import {
 } from '../../lib/store.js';
 
 export async function onRequestPost({ request, env }) {
-  // 1) Shared-secret gate: require token in the query string to match env.WEBHOOK_TOKEN
+  // Shared-secret gate
   const url = new URL(request.url);
   const token = url.searchParams.get('token');
   if (!env.WEBHOOK_TOKEN || token !== env.WEBHOOK_TOKEN) {
@@ -15,10 +15,9 @@ export async function onRequestPost({ request, env }) {
   let payload;
   try { payload = await request.json(); } catch { return new Response('Bad Request', { status: 400 }); }
 
-  // 2) Process ONLY real inbound messages (ignore delivery status / outbound events)
+  // Accept ONLY real inbound messages (ignore status/DLR/outbound events)
   const type = payload?.data?.event_type || payload?.data?.type || '';
   if (type !== 'message.received') {
-    // optional: surface minimal diagnostics in logs
     console.log('telnyx-inbound: ignored non-inbound event', { type });
     return new Response('Ignored non-inbound event', { status: 200 });
   }
@@ -27,21 +26,19 @@ export async function onRequestPost({ request, env }) {
   const to   = getInboundTo(payload);
   const text = String(getInboundText(payload) || '').trim();
   const media = getInboundMedia(payload) || [];
-
-  // optional: quick visibility in Cloudflare Functions logs
   console.log('telnyx-inbound', { type, from, to, mediaCount: media.length });
 
-  // 3) Only process messages that were actually sent to YOUR toll-free number
+  // Only process messages addressed to YOUR TFN
   if (!to || (env.TOLL_FREE_NUMBER && to !== env.TOLL_FREE_NUMBER)) {
     return new Response('Ignored: not our number', { status: 200 });
   }
 
-  // 4) Never respond to ourselves (belt-and-suspenders)
+  // Never respond to ourselves (prevents TFN↔TFN loops)
   if (from && env.TOLL_FREE_NUMBER && from === env.TOLL_FREE_NUMBER) {
     return new Response('Ignored: self-message', { status: 200 });
   }
 
-  // 5) If frozen, acknowledge but do not send anything back
+  // Frozen = acknowledge, no sends
   if (isFrozen(env)) {
     await logEvent(env, { type:'frozen_inbound', from, to, text, t: Date.now() });
     return new Response('OK', { status: 200 });
@@ -53,7 +50,7 @@ export async function onRequestPost({ request, env }) {
 
   const upper = text.toUpperCase();
 
-  // STOP/HELP keywords (we still respond if not frozen)
+  // STOP/HELP
   if (['STOP','STOP ALL','UNSUBSCRIBE','CANCEL','END','QUIT'].includes(upper)) {
     user.unsubscribed = true;
     user.status = 'opted_out';
@@ -70,6 +67,7 @@ export async function onRequestPost({ request, env }) {
 
   if (user.unsubscribed) return new Response('OK', { status: 200 });
 
+  // DONE → ask for proof
   if (/^DONE\b/i.test(text)) {
     user.status = 'awaiting_proof';
     await setUser(env, from, user);
@@ -78,6 +76,7 @@ export async function onRequestPost({ request, env }) {
     return new Response('OK', { status: 200 });
   }
 
+  // MMS proof → verify + increment link usage
   if (media && media.length > 0) {
     user.status = 'verified';
     user.proofUrls = media;
@@ -90,7 +89,6 @@ export async function onRequestPost({ request, env }) {
         await setLinks(env, links);
       }
     } catch {}
-
     await setUser(env, from, user);
     try {
       await sendSMS(env, from, 'Thanks! Proof received. We will review and send your payout soon.');
