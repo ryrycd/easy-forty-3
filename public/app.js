@@ -1,184 +1,207 @@
-// Typeform-style progressive flow for Easy Forty
-const steps = ['q1','q2','q3v','q3z','q4'];
-const fill = document.getElementById('fill');
-const stepCount = document.getElementById('stepCount');
-const msg = document.getElementById('msg');
+// Typeform-style progressive flow with auto-advance and clean validation
 
-const phoneEl = document.getElementById('phone');
-const consentEl = document.getElementById('consent');
-const venmoEl = document.getElementById('venmo');
-const zelleOtherWrap = document.getElementById('zelleOtherWrap');
-const zelleOtherEl = document.getElementById('zelleOther');
+// Elements
+const bar = document.getElementById('bar');
+const steps = [
+  document.getElementById('step1'),
+  document.getElementById('step2'),
+  document.getElementById('step3'),
+  document.getElementById('step4'),
+];
+let current = 0;
 
-let current = 'q1';
-let payoutMethod = null;        // 'venmo' | 'zelle'
-let zelleChoice = null;         // 'same'  | 'other'
+// State
+let state = {
+  phoneE164: null,
+  payoutMethod: 'venmo',     // 'venmo' | 'zelle'
+  venmo: '',
+  zelleUsePhone: false,
+  zelle: '',
+  consent: false,
+  eligible: 'no',            // 'no' | 'not_sure' | 'yes'
+};
 
-function show(id){
-  steps.forEach(s => {
-    const el = document.getElementById(s);
-    if (!el) return;
-    el.classList.toggle('active', s === id);
-  });
-  current = id;
-  const idx = stepIndex(current);
-  const total = 4; // we present as 4 questions total
-  fill.style.width = (idx/4)*100 + '%';
-  stepCount.textContent = `Step ${idx} of ${total}`;
-  hideError();
+// Helpers
+function goto(i){
+  steps[current].classList.remove('active');
+  current = Math.max(0, Math.min(i, steps.length-1));
+  steps[current].classList.add('active');
+  bar.style.width = `${(current)/(steps.length-1) * 100}%`;
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 }
+function next(){ goto(current+1); }
+function prev(){ goto(current-1); }
 
-function stepIndex(id){
-  // Map to visual count (q3v and q3z both count as step 3)
-  if (id === 'q1') return 1;
-  if (id === 'q2') return 2;
-  if (id === 'q3v' || id === 'q3z') return 3;
-  if (id === 'q4') return 4;
-  return 1;
+function fmtPhone(digits){
+  const d = digits.replace(/\D+/g,'').slice(-10);
+  if (d.length <= 3) return d;
+  if (d.length <= 6) return `(${d.slice(0,3)}) ${d.slice(3)}`;
+  return `(${d.slice(0,3)}) ${d.slice(3,6)}-${d.slice(6)}`;
 }
-
-function showError(text){
-  msg.textContent = text;
-  msg.style.display = 'block';
-  const active = document.querySelector('.q.active');
-  if (active){ active.classList.remove('shake'); void active.offsetWidth; active.classList.add('shake'); }
-}
-function hideError(){ msg.style.display = 'none'; }
-
-function normalizePhone(raw){
-  const digits = String(raw||'').replace(/\D+/g,'');
-  if (!digits) return null;
-  if (digits.startsWith('1') && digits.length===11) return '+'+digits;
-  if (digits.length===10) return '+1'+digits;
-  if (digits.length>=11 && String(raw).startsWith('+')) return String(raw);
+function normalizeUS(raw){
+  if (!raw) return null;
+  const digits = String(raw).replace(/\D+/g,'');
+  if (digits.startsWith('1') && digits.length === 11) return '+'+digits;
+  if (digits.length === 10) return '+1'+digits;
+  if (digits.length >= 11 && String(raw).startsWith('+')) return String(raw);
   return null;
 }
-function isEmail(s){ return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(s||'')); }
-function isVenmo(s){ return /^@?[A-Za-z0-9_.-]{3,32}$/.test(String(s||'')); }
+function isEmail(s){ return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s); }
+function isVenmo(s){ return /^@?[A-Za-z0-9_.-]{3,32}$/.test(s||''); }
 
-function choiceGroup(selector){
-  const nodes = Array.from(document.querySelectorAll(selector));
-  return {
-    nodes,
-    clear(){ nodes.forEach(n=>n.classList.remove('active')); },
-    value(){ const n = nodes.find(n=>n.classList.contains('active')); return n ? (n.dataset.method||n.dataset.zelle) : null; },
-    bind(){
-      nodes.forEach(n=> n.addEventListener('click', ()=> {
-        this.clear(); n.classList.add('active');
-        const m = n.dataset.method || n.dataset.zelle;
-        if (m === 'zelle') {
-          payoutMethod = 'zelle';
-        } else if (m === 'venmo') {
-          payoutMethod = 'venmo';
-        } else if (m === 'same' || m === 'other') {
-          zelleChoice = m;
-          zelleOtherWrap.style.display = (m === 'other') ? 'block' : 'none';
-        }
-      }));
-    }
-  };
-}
+function show(el){ el.classList.remove('hidden'); }
+function hide(el){ el.classList.add('hidden'); }
 
-// Bind choices
-const payoutChoices = choiceGroup('.choice[data-method]');
-payoutChoices.bind();
-const zelleChoices = choiceGroup('.choice[data-zelle]');
-zelleChoices.bind();
+// === Step 1: Phone (auto-advance) ===
+const phoneEl = document.getElementById('phone');
+const phoneErr = document.getElementById('phoneError');
 
-// Navigation
-document.getElementById('next1').addEventListener('click', ()=>{
-  const e164 = normalizePhone(phoneEl.value.trim());
-  if (!e164) return showError('Please enter a valid U.S. phone number.');
-  show('q2');
-});
+phoneEl.addEventListener('input', (e)=>{
+  // Live format
+  const raw = e.target.value;
+  const digits = raw.replace(/\D+/g,'');
+  e.target.value = fmtPhone(digits);
 
-document.getElementById('back2').addEventListener('click', ()=> show('q1'));
-document.getElementById('next2').addEventListener('click', ()=>{
-  if (payoutMethod === 'venmo') show('q3v');
-  else if (payoutMethod === 'zelle') show('q3z');
-  else showError('Choose Venmo or Zelle.');
-});
-
-// Venmo path
-document.getElementById('back3v').addEventListener('click', ()=> show('q2'));
-document.getElementById('next3v').addEventListener('click', ()=>{
-  const v = venmoEl.value.trim();
-  if (!isVenmo(v)) return showError('Enter a valid @Venmo username.');
-  show('q4');
-});
-
-// Zelle path
-document.getElementById('back3z').addEventListener('click', ()=> show('q2'));
-document.getElementById('next3z').addEventListener('click', ()=>{
-  if (zelleChoice === 'same') { show('q4'); return; }
-  if (zelleChoice === 'other') {
-    const z = zelleOtherEl.value.trim();
-    const ok = isEmail(z) || normalizePhone(z);
-    if (!ok) return showError('Enter a valid email or phone for Zelle.');
-    show('q4');
-    return;
+  // When valid, auto-advance after a short pause
+  const e164 = normalizeUS(raw);
+  if (e164) {
+    state.phoneE164 = e164;
+    phoneErr.classList.add('hidden');
+    // small delay so user sees it's valid
+    clearTimeout(phoneEl._advTimer);
+    phoneEl._advTimer = setTimeout(()=> next(), 350);
+  } else {
+    state.phoneE164 = null;
   }
-  showError('Choose an option for Zelle.');
+});
+phoneEl.addEventListener('blur', ()=>{
+  if (!state.phoneE164) { phoneErr.textContent = 'Please enter a valid U.S. phone number.'; phoneErr.classList.remove('hidden'); }
 });
 
-// Finish
-document.getElementById('back4').addEventListener('click', ()=>{
-  if (payoutMethod === 'venmo') show('q3v'); else show('q3z');
+// === Step 2: Eligibility ===
+const eligNote = document.getElementById('eligibilityNote');
+const eligWarn = document.getElementById('eligibilityWarn');
+document.querySelectorAll('[data-elg]').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('[data-elg]').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    const sel = btn.getAttribute('data-elg'); // no | not_sure | yes
+    state.eligible = sel;
+
+    hide(eligNote); hide(eligWarn);
+    if (sel === 'yes') {
+      eligWarn.innerHTML = 'Thanks for checking. Unfortunately, Acorns bonuses are only for new customers. If you know someone who hasn’t created an account yet, feel free to share this $40 opportunity with them.';
+      show(eligWarn);
+      // Do not advance; flow stops here.
+      return;
+    }
+    if (sel === 'not_sure') {
+      eligNote.textContent = 'If you already created an Acorns account before, the $40 bonus won’t apply. You’ll be able to quickly confirm your status once you receive the text.';
+      show(eligNote);
+    }
+    setTimeout(next, 200); // smooth advance for "No" or "Not sure"
+  });
 });
-document.getElementById('finish').addEventListener('click', async ()=>{
-  const phone = normalizePhone(phoneEl.value.trim());
-  if (!phone) return showError('Please enter a valid U.S. phone number.');
-  if (!consentEl.checked) return showError('Please agree to receive a few SMS to continue.');
+
+// === Step 3: Payout method ===
+const methodChips = document.querySelectorAll('[data-method]');
+const venmoWrap = document.getElementById('venmoWrap');
+const zelleWrap = document.getElementById('zelleWrap');
+const venmoInput = document.getElementById('venmo');
+
+const zelleSame = document.getElementById('zelleSame');
+const zelleOther = document.getElementById('zelleOther');
+const zelleInputWrap = document.getElementById('zelleInput');
+const zelleInput = document.getElementById('zelle');
+
+function setMethod(m){
+  state.payoutMethod = m;
+  methodChips.forEach(c=>c.classList.toggle('active', c.getAttribute('data-method')===m));
+  if (m==='venmo'){ venmoWrap.classList.remove('hidden'); zelleWrap.classList.add('hidden'); }
+  else { venmoWrap.classList.add('hidden'); zelleWrap.classList.remove('hidden'); }
+}
+methodChips.forEach(ch=>{
+  ch.addEventListener('click', ()=>{
+    setMethod(ch.getAttribute('data-method'));
+  });
+});
+
+venmoInput.addEventListener('input', ()=>{
+  const raw = venmoInput.value.trim();
+  if (isVenmo(raw)) {
+    state.venmo = raw.startsWith('@') ? raw : '@'+raw;
+    clearTimeout(venmoInput._t); venmoInput._t = setTimeout(next, 250);
+  }
+});
+
+zelleSame.addEventListener('click', ()=>{
+  zelleSame.classList.add('active'); zelleOther.classList.remove('active');
+  zelleInputWrap.classList.add('hidden');
+  state.zelleUsePhone = true;
+  state.zelle = ''; // derived at submit
+  setTimeout(next, 250);
+});
+zelleOther.addEventListener('click', ()=>{
+  zelleOther.classList.add('active'); zelleSame.classList.remove('active');
+  zelleInputWrap.classList.remove('hidden');
+  state.zelleUsePhone = false;
+  zelleInput.focus();
+});
+zelleInput.addEventListener('input', ()=>{
+  const val = zelleInput.value.trim();
+  const valid = isEmail(val) || !!normalizeUS(val);
+  if (valid) { state.zelle = val; clearTimeout(zelleInput._t); zelleInput._t = setTimeout(next, 250); }
+});
+
+// === Step 4: Consent + submit ===
+const consentEl = document.getElementById('consent');
+const submitBtn = document.getElementById('submitBtn');
+const okBox = document.getElementById('ok');
+const badBox = document.getElementById('bad');
+
+consentEl.addEventListener('change', ()=>{
+  state.consent = consentEl.checked;
+  submitBtn.disabled = !state.consent;
+});
+
+submitBtn.addEventListener('click', async ()=>{
+  hide(okBox); hide(badBox);
+  submitBtn.disabled = true; submitBtn.textContent = 'Sending…';
 
   let handle = '';
-  if (payoutMethod === 'venmo') {
-    let v = venmoEl.value.trim();
-    if (!v.startsWith('@')) v = '@' + v;
-    handle = v;
-  } else {
-    if (zelleChoice === 'same') {
-      handle = `zelle:${phone}`;
-    } else {
-      const z = zelleOtherEl.value.trim();
-      handle = `zelle:${z}`;
+  if (state.payoutMethod === 'venmo') {
+    if (!isVenmo(state.venmo)) {
+      submitBtn.disabled=false; submitBtn.textContent='Text me the link →';
+      badBox.textContent = 'Enter a valid @Venmo username.'; show(badBox); return;
     }
+    handle = state.venmo.startsWith('@') ? state.venmo : '@'+state.venmo;
+  } else {
+    handle = state.zelleUsePhone ? `zelle:${state.phoneE164}` : `zelle:${state.zelle}`;
   }
-
-  const btn = document.getElementById('finish');
-  btn.disabled = true; btn.textContent = 'Sending…';
-  hideError();
 
   try{
     const res = await fetch('/api/register', {
       method:'POST',
       headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ phone, handle, consent: true })
+      body: JSON.stringify({ phone: state.phoneE164, handle, consent: true })
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || 'Failed to send.');
-    document.getElementById('ok').style.display = 'block';
-    // reset for next visitor
-    venmoEl.value = ''; zelleOtherEl.value = ''; consentEl.checked = false;
-    payoutMethod = null; zelleChoice = null;
-    payoutChoices.clear(); zelleChoices.clear();
-    zelleOtherWrap.style.display = 'none';
-    show('q1');
+    show(okBox);
+
+    // Reset flow for next user (keeps spacing snappy)
+    state = { phoneE164:null, payoutMethod:'venmo', venmo:'', zelleUsePhone:false, zelle:'', consent:false, eligible:'no' };
+    phoneEl.value=''; venmoInput.value=''; zelleInput.value=''; consentEl.checked=false;
+    submitBtn.disabled = true; submitBtn.textContent='Text me the link →';
+    setMethod('venmo');
+    goto(0);
   }catch(err){
-    showError(err.message || 'Could not send right now. Try again later.');
-  }finally{
-    btn.disabled = false; btn.textContent = 'Text me the link →';
+    badBox.textContent = err.message || 'Could not send right now. Try again later.';
+    show(badBox);
+    submitBtn.disabled = false; submitBtn.textContent='Text me the link →';
   }
 });
 
-// Enter to continue convenience
-document.addEventListener('keydown', (e)=>{
-  if (e.key !== 'Enter') return;
-  const active = document.querySelector('.q.active');
-  if (!active) return;
-  e.preventDefault();
-  if (active.id === 'q1') document.getElementById('next1').click();
-  else if (active.id === 'q2') document.getElementById('next2').click();
-  else if (active.id === 'q3v') document.getElementById('next3v').click();
-  else if (active.id === 'q3z') document.getElementById('next3z').click();
-  else if (active.id === 'q4') document.getElementById('finish').click();
-});
+// Initialize
+setMethod('venmo');
+goto(0);
