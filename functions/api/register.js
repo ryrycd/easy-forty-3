@@ -1,30 +1,22 @@
-//quick comment
-import { normalizeUS, validHandle } from '../../lib/validation.js';
-import { getLinks, setUser, pickActiveLink, sendSMS, logEvent, isFrozen } from '../../lib/store.js';
+// functions/api/register.js
+import { normalizeUS } from '../../lib/validation.js';
+import { getLinks, setUser, pickActiveLink, sendSMS, logEvent, ensureWeeklyReset } from '../../lib/store.js';
 
-const CORS = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'Content-Type',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS'
-};
-
+const CORS = { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': 'Content-Type', 'Access-Control-Allow-Methods': 'POST, OPTIONS' };
 export async function onRequestOptions() { return new Response(null, { status: 204, headers: CORS }); }
 
 export async function onRequestPost({ request, env }) {
   try {
     const { phone, handle, consent } = await request.json();
-
-    if (isFrozen(env)) return json({ error: 'Temporarily paused. Please try again later.' }, 503);
     if (!consent) return json({ error: 'Consent required.' }, 400);
-
     const e164 = normalizeUS(phone);
     if (!e164) return json({ error: 'Invalid phone.' }, 400);
-    if (handle && !validHandle(handle)) return json({ error: 'Invalid payout handle.' }, 400);
+
+    // Weekly reset (Monday) if configured
+    await ensureWeeklyReset(env);
 
     let links = await getLinks(env);
-    if (!links || !links.items || links.items.length === 0) {
-      return json({ error: 'No referral links configured yet. Try again later.' }, 503);
-    }
+    if (!links?.items?.length) return json({ error: 'No referral links configured yet. Try again later.' }, 503);
     const choice = pickActiveLink(links);
     if (!choice) return json({ error: 'All referral links are currently exhausted. Try again later.' }, 503);
 
@@ -46,16 +38,11 @@ export async function onRequestPost({ request, env }) {
 Reply STOP to opt out. HELP for help.`;
 
     await sendSMS(env, e164, welcome);
-
     return json({ ok: true });
   } catch (err) {
     return json({ error: err.message || 'Server error' }, 500);
   }
 }
-
 function json(body, status=200, extraHeaders={}) {
-  return new Response(JSON.stringify(body), {
-    status,
-    headers: { 'Content-Type': 'application/json', ...CORS, ...extraHeaders }
-  });
+  return new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json', ...CORS, ...extraHeaders } });
 }
